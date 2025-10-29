@@ -74,31 +74,58 @@ ipcMain.handle('play-audio', async (event, audioPath) => {
   }
 });
 
-// Database handlers using JSON
-ipcMain.handle('get-letters-with-progress', async (event) => {
+// Gestore per ottenere la lista degli utenti
+ipcMain.handle('get-users', async (event) => {
   try {
-    const data = readData();
-    const lettersWithProgress = data.letters.map(letter => ({
-      ...letter,
-      is_viewed: data.progress.includes(letter.id)
-    }));
-    return lettersWithProgress;
+    const { getUsers } = require('../src/database.js');
+    return getUsers();
+  } catch (error) {
+    console.error('Failed to get users:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Gestore per creare un nuovo utente
+ipcMain.handle('create-user', async (event, name) => {
+  try {
+    const { createUser } = require('../src/database.js');
+    return createUser(name);
+  } catch (error) {
+    console.error('Failed to create user:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Gestore per ottenere le lettere con il progresso di un utente
+ipcMain.handle('get-letters', async (event, userId) => {
+  try {
+    const { getLettersWithProgress } = require('../src/database.js');
+    return getLettersWithProgress(userId);
   } catch (error) {
     console.error('Failed to get letters with progress:', error);
     return { success: false, error: error.message };
   }
 });
 
+// Gestore per segnare una lettera come vista per un utente (nuovo)
+ipcMain.handle('mark-as-viewed-by-user', async (event, letterId, userId) => {
+  try {
+    const { markAsViewed } = require('../src/database.js');
+    const result = markAsViewed(letterId, userId);
+    return { success: true, changed: result };
+  } catch (error) {
+    console.error('Failed to mark as viewed:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Gestore legacy per segnare una lettera come vista
 ipcMain.handle('mark-as-viewed', async (event, letterId) => {
   try {
-    const data = readData();
-    if (!data.progress.includes(letterId)) {
-      data.progress.push(letterId);
-      if (writeData(data)) {
-        return { success: true, changed: true };
-      }
-    }
-    return { success: true, changed: false };
+    const { markAsViewed } = require('../src/database.js');
+    // Usa un userId di default (1) per compatibilità
+    const result = markAsViewed(letterId, 1);
+    return { success: true, changed: result };
   } catch (error) {
     console.error('Failed to mark as viewed:', error);
     return { success: false, error: error.message };

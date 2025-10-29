@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Guest",
+      "created_at": 1672531200000
+    }
+  ],
+  "letters": [
+    {
+      "id": 1,
+      "character": "अ",
+      "romanization": "a",
+      "audio_path": "assets/audio/a.mp3"
+    },
+    {
+      "id": 2,
+      "character": "आ",
+      "romanization": "ā",
+      "audio_path": "assets/audio/aa.mp3"
+    },
+    {
+      "id": 3,
+      "character": "इ",
+      "romanization": "i",
+      "audio_path": "assets/audio/i.mp3"
+    }
+  ],
+  "progress": {
+    "1": [
+      "2",
+      "3",
+      "1"
+    ]
+  }
+}

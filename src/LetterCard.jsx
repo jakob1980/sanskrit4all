@@ -1,37 +1,36 @@
 // src/LetterCard.jsx
-import React from 'react';
+import React, { useState } from 'react';
 
-function LetterCard({ character, romanization, audioPath, isViewed, letterId }) {
+function LetterCard({ character, romanization, audioPath, isViewed, letterId, userId }) {
+  // Utilizziamo lo stato locale per gestire il viewed
+  const [viewed, setViewed] = useState(isViewed);
+
   const handleClick = async () => {
-    // Chiameremo la nostra API Electron qui
-    console.log(`Playing audio for: ${character} (${audioPath})`);
-    
+    // Se non è già stata vista, la segnaliamo nel database
+    if (!viewed) {
+      // Usiamo markAsViewedByUser che accetta sia letterId che userId
+      const wasMarked = await window.electronAPI.markAsViewedByUser(letterId, userId);
+      if (wasMarked) {
+        setViewed(true);
+      }
+    }
+
+    // Riproduci l'audio
     if (window.electronAPI && window.electronAPI.playAudio) {
       window.electronAPI.playAudio(audioPath);
-    } else {
-      console.error('electronAPI.playAudio is not available!');
-    }
-    
-    // Segna la lettera come vista nel database (solo se non è già stata vista)
-    if (!isViewed && letterId && window.electronAPI && window.electronAPI.markAsViewed) {
-      try {
-        await window.electronAPI.markAsViewed(letterId);
-      } catch (error) {
-        console.error('Failed to mark as viewed:', error);
-      }
     }
   };
 
   // Stile dinamico basato sullo stato 'visto'
   const cardStyle = {
-    border: `2px solid ${isViewed ? '#4CAF50' : '#ccc'}`,
+    border: `2px solid ${viewed ? '#4CAF50' : '#ccc'}`,
     borderRadius: '8px',
     padding: '2rem',
     margin: '1rem',
     cursor: 'pointer',
     textAlign: 'center',
     transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-    backgroundColor: isViewed ? '#f0f8f0' : '#fff',
+    backgroundColor: viewed ? '#f0f8f0' : '#fff',
   };
 
   return (
@@ -48,7 +47,7 @@ function LetterCard({ character, romanization, audioPath, isViewed, letterId }) 
       }}
     >
       <div style={{ fontSize: '4rem' }}>{character}</div>
-      <div style={{ fontSize: '1.2rem', color: isViewed ? '#2E7D32' : '#555' }}>
+      <div style={{ fontSize: '1.2rem', color: viewed ? '#2E7D32' : '#555' }}>
         {romanization}
       </div>
     </div>

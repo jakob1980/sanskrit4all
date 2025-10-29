@@ -1,58 +1,51 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import LetterCard from './LetterCard';
+import UserSelector from './UserSelector.jsx';
+import LetterList from './LetterList.jsx';
+import { UserProvider, useUser } from './UserContext.jsx';
 
-function App() {
+// Componente interno che accede al contesto
+function AppContent() {
   const [letters, setLetters] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { currentUser } = useUser();
 
-  // Carica le lettere dal database quando il componente viene montato
-  const loadLetters = async () => {
-    try {
-      const result = await window.electronAPI.getLettersWithProgress();
-      if (result && Array.isArray(result)) {
-        setLetters(result);
-      } else {
-        console.error('Invalid response from getLettersWithProgress:', result);
-      }
-    } catch (error) {
-      console.error('Failed to load letters:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Carica le lettere solo quando un utente è stato selezionato
   useEffect(() => {
-    loadLetters();
-  }, []);
+    if (currentUser && window.electronAPI) {
+      const loadLetters = async () => {
+        const lettersData = await window.electronAPI.getLetters(currentUser.id);
+        setLetters(lettersData);
+      };
+      loadLetters();
+    } else {
+      setLetters([]); // Pulisce le lettere se nessun utente è selezionato
+    }
+  }, [currentUser]); // Si ri-esegue solo quando l'utente cambia
 
+  // Se non c'è un utente, mostra il selettore
+  if (!currentUser) {
+    return <UserSelector />;
+  }
+
+  // Altrimenti, mostra l'app principale con le lettere
   return (
     <div style={{ padding: '2rem', backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
       <h1 style={{ textAlign: 'center' }}>📖 Sanskrit Learning App</h1>
       <p style={{ textAlign: 'center', color: '#666' }}>
-        Clicca su una lettera per sentirne la pronuncia. Quelle già viste avranno un colore diverso.
+        Ciao, <strong>{currentUser.name}</strong>! Clicca su una lettera per sentirne la pronuncia.
       </p>
       
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>Loading Sanskrit letters...</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {letters.map((letter) => (
-            <LetterCard
-              key={letter.id}
-              letterId={letter.id}
-              character={letter.character}
-              romanization={letter.romanization}
-              audioPath={letter.audio_path}
-              isViewed={letter.is_viewed}
-              onViewedChange={loadLetters} // Callback per ricaricare i dati
-            />
-          ))}
-        </div>
-      )}
+      <LetterList letters={letters} />
     </div>
+  );
+}
+
+// Componente principale che fornisce il contesto
+function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
 
