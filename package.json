@@ -1,0 +1,28 @@
+{
+  "name": "sanskritapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "electron": "wait-on http://localhost:5177 && electron electron/main.js",
+    "electron:dev": "concurrently -k \"npm run dev\" \"npm run electron\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "electron": "^39.0.0",
+    "play-sound": "^1.1.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.2.1",
+    "vite": "^7.1.12",
+    "wait-on": "^9.0.1"
+  }
+}
