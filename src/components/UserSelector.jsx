@@ -1,6 +1,7 @@
 // src/UserSelector.jsx
 import React, { useState, useEffect } from 'react';
-import { useUser } from './UserContext.jsx';
+import { useUser } from '../contexts/UserContext.jsx'; // <-- Percorso aggiornato
+import { getUsers, createUser } from '../services/userService.js'; // <-- Nuova importazione
 
 function UserSelector() {
   const [users, setUsers] = useState([]);
@@ -10,10 +11,8 @@ function UserSelector() {
   // Carica la lista di utenti all'avvio
   useEffect(() => {
     const loadUsers = async () => {
-      if (window.electronAPI) {
-        const userList = await window.electronAPI.getUsers();
-        setUsers(userList);
-      }
+      const userList = await getUsers(); // <-- Chiamata al servizio
+      setUsers(userList);
     };
     loadUsers();
   }, []);
@@ -24,8 +23,8 @@ function UserSelector() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    if (newUserName.trim() && window.electronAPI) {
-      const newUser = await window.electronAPI.createUser(newUserName.trim());
+    if (newUserName.trim()) {
+      const newUser = await createUser(newUserName.trim()); // <-- Chiamata al servizio
       setUsers([...users, newUser]);
       setNewUserName('');
       handleSelectUser(newUser); // Seleziona automaticamente il nuovo utente

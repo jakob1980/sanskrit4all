@@ -1,7 +1,6 @@
-// src/LetterList.jsx
 import React from 'react';
 import LetterCard from './LetterCard.jsx';
-import { useUser } from './UserContext.jsx';
+import { useUser } from '../contexts/UserContext.jsx';
 
 function LetterList({ letters }) {
   const { currentUser } = useUser();

@@ -1,24 +1,21 @@
 // src/LetterCard.jsx
 import React, { useState } from 'react';
+import { markAsViewed } from '../services/letterService.js';
+import { playAudio } from '../services/audioService.js';
 
-function LetterCard({ character, romanization, audioPath, isViewed, letterId, userId }) {
+function LetterCard({ id, character, romanization, audioPath, isViewed, userId }) {
   // Utilizziamo lo stato locale per gestire il viewed
   const [viewed, setViewed] = useState(isViewed);
 
   const handleClick = async () => {
-    // Se non è già stata vista, la segnaliamo nel database
     if (!viewed) {
-      // Usiamo markAsViewedByUser che accetta sia letterId che userId
-      const wasMarked = await window.electronAPI.markAsViewedByUser(letterId, userId);
+      const wasMarked = await markAsViewed(id, userId);
       if (wasMarked) {
         setViewed(true);
       }
     }
 
-    // Riproduci l'audio
-    if (window.electronAPI && window.electronAPI.playAudio) {
-      window.electronAPI.playAudio(audioPath);
-    }
+    await playAudio(audioPath);
   };
 
   // Stile dinamico basato sullo stato 'visto'

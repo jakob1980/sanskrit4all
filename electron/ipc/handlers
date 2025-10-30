@@ -1,0 +1,87 @@
+// electron/ipc/handlers.js
+const { ipcMain } = require('electron');
+const player = require('play-sound');
+const path = require('path');
+
+// Funzioni importate dal nostro "database" (che rifattorizzeremo tra poco)
+// Nota: qui usiamo require() perché siamo nel main process.
+const {
+  getUsers,
+  createUser,
+  getLettersWithProgress,
+  markAsViewed,
+} = require('../../src/database.js'); // Percorso temporaneo
+
+// Funzione per registrare tutti gli handler
+function registerIpcHandlers() {
+  // Handler per l'audio
+  ipcMain.handle('play-audio', async (event, audioPath) => {
+    try {
+      const absolutePath = path.join(__dirname, '..', '..', audioPath);
+      console.log(`Attempting to play: ${absolutePath}`);
+      
+      player().play(absolutePath, (err) => {
+        if (err) console.error(`Error playing sound: ${err}`);
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to play audio:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Handler per gli utenti
+  ipcMain.handle('get-users', async (event) => {
+    try {
+      return getUsers();
+    } catch (error) {
+      console.error('Failed to get users:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('create-user', async (event, name) => {
+    try {
+      return createUser(name);
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Handler per le lettere e progressi
+  ipcMain.handle('get-letters', async (event, userId) => {
+    try {
+      return getLettersWithProgress(userId);
+    } catch (error) {
+      console.error('Failed to get letters with progress:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Handler per segnare una lettera come vista per un utente (nuovo)
+  ipcMain.handle('mark-as-viewed-by-user', async (event, letterId, userId) => {
+    try {
+      const result = markAsViewed(letterId, userId);
+      return { success: true, changed: result };
+    } catch (error) {
+      console.error('Failed to mark as viewed:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Gestore legacy per segnare una lettera come vista
+  ipcMain.handle('mark-as-viewed', async (event, letterId) => {
+    try {
+      // Usa un userId di default (1) per compatibilità
+      const result = markAsViewed(letterId, 1);
+      return { success: true, changed: result };
+    } catch (error) {
+      console.error('Failed to mark as viewed:', error);
+      return { success: false, error: error.message };
+    }
+  });
+}
+
+module.exports = { registerIpcHandlers };
