@@ -3,7 +3,16 @@
     {
       "id": 1,
       "name": "Guest",
+      "email": null,
+      "password_hash": null,
       "created_at": 1672531200000
+    },
+    {
+      "id": 2,
+      "name": "felix",
+      "email": "filippo.cioni4@gmail.com",
+      "password_hash": "$2b$12$76Q.RZ7ciaZcu2VJ9Xh3OeM4cgF9hk.osZPs.Ver.oqSv/0zyS.2i",
+      "created_at": 1761835831887
     }
   ],
   "letters": [
@@ -11,26 +20,78 @@
       "id": 1,
       "character": "अ",
       "romanization": "a",
-      "audio_path": "assets/audio/a.mp3"
+      "audio_path": "assets/audio/a.wav",
+      "category": "vowel"
     },
     {
       "id": 2,
       "character": "आ",
       "romanization": "ā",
-      "audio_path": "assets/audio/aa.mp3"
+      "audio_path": "assets/audio/aa.wav",
+      "category": "vowel"
     },
     {
       "id": 3,
       "character": "इ",
       "romanization": "i",
-      "audio_path": "assets/audio/i.mp3"
+      "audio_path": "assets/audio/i.wav",
+      "category": "vowel"
+    },
+    {
+      "id": 4,
+      "character": "ई",
+      "romanization": "ī",
+      "audio_path": "assets/audio/ii.wav",
+      "category": "vowel"
+    },
+    {
+      "id": 5,
+      "character": "य",
+      "romanization": "ya",
+      "audio_path": "assets/audio/ya.wav",
+      "category": "semivowel"
+    },
+    {
+      "id": 6,
+      "character": "र",
+      "romanization": "ra",
+      "audio_path": "assets/audio/ra.wav",
+      "category": "semivowel"
+    },
+    {
+      "id": 7,
+      "character": "ल",
+      "romanization": "la",
+      "audio_path": "assets/audio/la.wav",
+      "category": "semivowel"
+    },
+    {
+      "id": 8,
+      "character": "क",
+      "romanization": "ka",
+      "audio_path": "assets/audio/ka.wav",
+      "category": "consonant"
+    },
+    {
+      "id": 9,
+      "character": "ख",
+      "romanization": "kha",
+      "audio_path": "assets/audio/kha.wav",
+      "category": "consonant"
+    },
+    {
+      "id": 10,
+      "character": "ग",
+      "romanization": "ga",
+      "audio_path": "assets/audio/ga.wav",
+      "category": "consonant"
     }
   ],
   "progress": {
     "1": [
       "2",
-      "3",
-      "1"
-    ]
+      "3"
+    ],
+    "2": []
   }
 }

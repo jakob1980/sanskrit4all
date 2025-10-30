@@ -1,65 +1,59 @@
-// src/App.jsx
-import React, { useState, useEffect } from 'react';
-import UserSelector from './components/UserSelector.jsx';
-import LetterList from './components/LetterList.jsx';
+import React from 'react';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { UserProvider, useUser } from './contexts/UserContext.jsx';
-import { getLetters } from './services/letterService.js';
 
-// Componente interno che accede al contesto
-function AppContent() {
-  const [letters, setLetters] = useState([]);
+// Importiamo le pagine
+import HomePage from './pages/HomePage.jsx';
+import AlphabetPage from './pages/AlphabetPage.jsx';
+import ExercisesPage from './pages/ExercisesPage.jsx';
+import SandhiPage from './pages/SandhiPage.jsx';
+import LabPage from './pages/LabPage.jsx';
+import LoginScreen from './components/LoginScreen.jsx';
+
+// Componente per la navigazione
+function NavBar() {
   const { currentUser, setCurrentUser } = useUser();
 
-  // Carica le lettere solo quando un utente è stato selezionato
-  useEffect(() => {
-    if (currentUser && window.electronAPI) {
-      const loadLetters = async () => {
-        const lettersData = await getLetters(currentUser.id);
-        setLetters(lettersData);
-      };
-      loadLetters();
-    } else {
-      setLetters([]); // Pulisce le lettere se nessun utente è selezionato
-    }
-  }, [currentUser]); // Si ri-esegue solo quando l'utente cambia
+  if (!currentUser) return null; // Non mostrare la navigazione se non loggato
 
-  // Se non c'è un utente, mostra il selettore
-  if (!currentUser) {
-    return <UserSelector />;
-  }
-
-  // Altrimenti, mostra l'app principale con le lettere
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
-      {/* Aggiungiamo un'intestazione con il pulsante di logout */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ margin: 0 }}>📖 Sanskrit Learning App</h1>
-        <button
-          onClick={() => setCurrentUser(null)} // <-- La magia è qui!
-          style={{
-            padding: '0.5rem 1rem',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            border: '1px solid #dc3545',
-            borderRadius: '8px',
-            backgroundColor: '#f8d7da',
-            color: '#721c24',
-          }}
-        >
-          Cambia Utente
-        </button>
-      </div>
-
-      <p style={{ textAlign: 'center', color: '#666' }}>
-        Ciao, <strong>{currentUser.name}</strong>! Clicca su una lettera per sentirne la pronuncia.
-      </p>
-      
-      <LetterList letters={letters} />
-    </div>
+    <nav style={{ display: 'flex', justifyContent: 'space-around', padding: '1rem', backgroundColor: '#333', color: 'white' }}>
+      <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Home</Link>
+      <Link to="/alphabet" style={{ color: 'white', textDecoration: 'none' }}>Alfabeto</Link>
+      <Link to="/exercises" style={{ color: 'white', textDecoration: 'none' }}>Esercizi</Link>
+      <Link to="/sandhi" style={{ color: 'white', textDecoration: 'none' }}>Sandhi</Link>
+      <Link to="/lab" style={{ color: 'white', textDecoration: 'none' }}>Laboratorio</Link>
+      <button onClick={() => setCurrentUser(null)} style={{ background: 'none', border: '1px solid white', color: 'white', cursor: 'pointer' }}>
+        Logout
+      </button>
+    </nav>
   );
 }
 
-// Componente principale che fornisce il contesto
+// Componente principale che gestisce le rotte
+function AppContent() {
+  const { currentUser } = useUser();
+
+  if (!currentUser) {
+    return <LoginScreen />;
+  }
+
+  return (
+    <Router>
+      <NavBar />
+      <main style={{ padding: '1rem' }}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/alphabet" element={<AlphabetPage />} />
+          <Route path="/exercises" element={<ExercisesPage />} />
+          <Route path="/sandhi" element={<SandhiPage />} />
+          <Route path="/lab" element={<LabPage />} />
+        </Routes>
+      </main>
+    </Router>
+  );
+}
+
 function App() {
   return (
     <UserProvider>

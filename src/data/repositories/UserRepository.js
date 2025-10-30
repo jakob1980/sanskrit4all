@@ -5,11 +5,13 @@ class UserRepository {
     return readData().users;
   }
 
-  create(name) {
+  create(name, email, passwordHash) { // Aggiungi i nuovi parametri
     const data = readData();
     const newUser = {
       id: data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1,
       name: name,
+      email: email, // Salva l'email
+      password_hash: passwordHash, // Salva l'hash
       created_at: Date.now()
     };
     data.users.push(newUser);
