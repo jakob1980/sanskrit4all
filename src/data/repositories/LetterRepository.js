@@ -1,14 +1,24 @@
-const { readData } = require('../db.js');
+// src/data/repositories/LetterRepository.js
+import prisma from '../prisma.js';
 
-class LetterRepository {
-  findAllWithProgress(userId) {
-    const data = readData();
-    const viewedLetterIds = new Set(data.progress[userId.toString()] || []);
-    return data.letters.map(letter => ({
+export class LetterRepository {
+  async findAllWithProgress(userId) {
+    const letters = await prisma.letter.findMany({
+      orderBy: { id: 'asc' },
+      include: { // Includiamo i dati del progresso per l'utente specificato
+        progress: {
+          where: { userId: userId },
+          select: { viewedAt: true }
+        }
+      }
+    });
+
+    // Trasformiamo i dati per corrispondere al formato che ci aspettiamo
+    return letters.map(letter => ({
       ...letter,
-      is_viewed: viewedLetterIds.has(letter.id.toString())
+      is_viewed: letter.progress.length > 0,
+      // Rimuoviamo il campo progress non necessario nel componente
+      progress: undefined,
     }));
   }
 }
-
-module.exports = { LetterRepository };

@@ -4,9 +4,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  root: 'src', // Dice a Vite che i nostri file sorgente sono nella cartella 'src'
   server: {
-    port: 5177, // Porta fissa per evitare conflitti
+    port: 5177, // Porta fissa
     host: 'localhost'
   },
+  build: {
+    outDir: 'dist', // Build nella cartella corrente
+    emptyOutDir: true,
+  }
 });

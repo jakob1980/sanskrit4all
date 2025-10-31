@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database/app.db"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String?  @unique
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  progress     Progress[]
+
+  @@map("users")
+}
+
+model Letter {
+  id          Int      @id @default(autoincrement())
+  character   String   @unique
+  romanization String
+  audioPath   String   @map("audio_path")
+  category    String
+  progress    Progress[]
+
+  @@map("letters")
+}
+
+model Progress {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  letterId  Int      @map("letter_id")
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  letter    Letter   @relation(fields: [letterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, letterId])
+  @@map("progress")
+}

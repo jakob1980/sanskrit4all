@@ -1,6 +1,6 @@
 // electron/services/AuthService.js
-const bcrypt = require('bcrypt');
-const { UserRepository } = require('../../src/data/repositories/index.js');
+import bcrypt from 'bcrypt';
+import { UserRepository } from '../../src/data/repositories/index.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -16,34 +16,32 @@ class AuthService {
 
     // Creazione dell'utente
     const userRepo = new UserRepository();
-    const newUser = userRepo.create(name, email, passwordHash);
-    
-    // Rimuoviamo l'hash prima di inviare i dati al frontend
-    const { password_hash, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
+    const newUser = await userRepo.create(name, email, passwordHash);
+
+    // Il metodo create già esclude il passwordHash, quindi possiamo restituire direttamente
+    return newUser;
   }
 
   async login(email, password) {
     // Trova l'utente per email
     const userRepo = new UserRepository();
-    const users = userRepo.findAll();
-    const user = users.find(u => u.email === email);
+    const user = await userRepo.findByEmail(email);
 
-    if (!user || !user.password_hash) {
+    if (!user || !user.passwordHash) {
       throw new Error('Email o password non corretti.');
     }
 
     // Confronta la password in chiaro con l'hash salvato
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new Error('Email o password non corretti.');
     }
 
     // Rimuoviamo l'hash prima di inviare i dati al frontend
-    const { password_hash, ...userWithoutPassword } = user;
+    const { passwordHash, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
 }
 
-module.exports = { AuthService };
+export { AuthService };

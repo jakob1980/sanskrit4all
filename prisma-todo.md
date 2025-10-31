@@ -1,0 +1,4 @@
+- [x] Analizzare i requisiti e verificare la struttura del progetto
+- [ ] Inizializzare Prisma con SQLite come datasource provider
+- [ ] Verificare che i file di configurazione siano stati creati correttamente
+- [ ] Testare l'inizializzazione eseguendo un comando di verifica

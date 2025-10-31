@@ -1,24 +1,48 @@
-const { readData, writeData } = require('../db.js');
+// src/data/repositories/UserRepository.js
+import prisma from '../prisma.js';
 
-class UserRepository {
-  findAll() {
-    return readData().users;
+export class UserRepository {
+  async findAll() {
+    const users = await prisma.user.findMany({
+      orderBy: { id: 'asc' },
+      select: { // Selezioniamo esplicitamente i campi, escludendo la password
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      }
+    });
+    return users;
   }
 
-  create(name, email, passwordHash) { // Aggiungi i nuovi parametri
-    const data = readData();
-    const newUser = {
-      id: data.users.length > 0 ? Math.max(...data.users.map(u => u.id)) + 1 : 1,
-      name: name,
-      email: email, // Salva l'email
-      password_hash: passwordHash, // Salva l'hash
-      created_at: Date.now()
-    };
-    data.users.push(newUser);
-    data.progress[newUser.id.toString()] = [];
-    writeData(data);
+  async create(name, email, passwordHash) {
+    const newUser = await prisma.user.create({
+      data: {
+        name: name,
+        email: email,
+        passwordHash: passwordHash,
+      },
+      select: { // Restituiamo l'utente senza la password
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      }
+    });
     return newUser;
   }
-}
 
-module.exports = { UserRepository };
+  async findByEmail(email) {
+    const user = await prisma.user.findUnique({
+      where: { email: email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        passwordHash: true,
+        createdAt: true,
+      }
+    });
+    return user;
+  }
+}

@@ -1,15 +1,15 @@
 // src/data/db.js
-const fs = require('fs');
-const path = require('path');
-const dataPath = path.join(__dirname, '..', 'data.json');
+import Database from 'better-sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-function readData() {
-  const rawData = fs.readFileSync(dataPath, 'utf8');
-  return JSON.parse(rawData);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-function writeData(data) {
-  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-}
+// Il percorso del database è ora nella cartella 'database'
+const dbPath = path.join(__dirname, '..', '..', 'database', 'app.db');
 
-module.exports = { readData, writeData };
+export const db = new Database(dbPath);
+
+// Abilita le chiavi esterne per garantire l'integrità dei dati
+db.pragma('foreign_keys = ON');

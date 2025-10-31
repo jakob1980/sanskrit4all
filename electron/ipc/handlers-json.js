@@ -1,18 +1,9 @@
-// electron/ipc/handlers.js
 import { ipcMain } from 'electron';
 import fs from 'fs';
 import path from 'path';
 
-// Importiamo le classi dei repository
-import { UserRepository, LetterRepository, ProgressRepository } from '../../src/data/repositories/index.js';
-
-// Importiamo il servizio di autenticazione
-import { AuthService } from '../services/AuthService.js';
-
-// Istanziamo i repository (potrebbero essere singleton in un'app più grande)
-const userRepo = new UserRepository();
-const letterRepo = new LetterRepository();
-const progressRepo = new ProgressRepository();
+// Importiamo il servizio di autenticazione basato su JSON
+import { AuthService } from '../services/AuthService-json.js';
 
 // Istanziamo il servizio di autenticazione
 const authService = new AuthService();
@@ -26,7 +17,7 @@ function registerIpcHandlers() {
       
       // Costruisci il percorso assoluto del file audio
       const audioFileName = audioPath.split('/').pop(); // Prendi solo il nome del file
-      const absolutePath = path.join(__dirname, '..', '..', 'assets', 'audio', audioFileName);
+      const absolutePath = path.join(process.cwd(), 'assets', 'audio', audioFileName);
       
       console.log('IPC: Absolute path:', absolutePath);
       
@@ -54,7 +45,7 @@ function registerIpcHandlers() {
     }
   });
 
-  // NUOVI handler per l'autenticazione
+  // NUOVI handler per l'autenticazione basati su JSON
   ipcMain.handle('auth-register', async (event, name, email, password) => {
     try {
       return await authService.register(name, email, password);
@@ -74,65 +65,67 @@ function registerIpcHandlers() {
     }
   });
 
-  // Handler per gli utenti (ancora utili per il "Guest")
+  // Handler per ottenere tutti gli utenti (per modalità guest)
   ipcMain.handle('get-users', () => {
     try {
-      return userRepo.findAll();
+      return authService.getAllUsers();
     } catch (error) {
       console.error('Get users error:', error);
       return []; // Ritorna un array vuoto in caso di errore
     }
   });
 
-  ipcMain.handle('create-user', (event, name) => {
-    try {
-      return userRepo.create(name);
-    } catch (error) {
-      console.error('Create user error:', error);
-      return null; // Ritorna null in caso di errore
-    }
-  });
-
-  // Handler per le lettere e progressi
+  // Handler per le lettere (versione semplificata)
   ipcMain.handle('get-letters', (event, userId) => {
     try {
-      return letterRepo.findAllWithProgress(userId);
+      const dataPath = path.join(process.cwd(), 'data', 'letterData.json');
+      if (!fs.existsSync(dataPath)) {
+        return [];
+      }
+      
+      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+      return data.letters || [];
     } catch (error) {
       console.error('Get letters error:', error);
-      return []; // Ritorna un array vuoto in caso di errore
+      return [];
     }
   });
 
+  // Handler per il progresso (versione semplificata)
   ipcMain.handle('mark-as-viewed', (event, letterId, userId) => {
     try {
-      return progressRepo.markAsViewed(letterId, userId);
+      const dataPath = path.join(process.cwd(), 'data', 'letterData.json');
+      if (!fs.existsSync(dataPath)) {
+        return false;
+      }
+      
+      const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+      
+      // Aggiungi il progresso
+      if (!data.progress) {
+        data.progress = [];
+      }
+      
+      // Controlla se l'utente ha già visto questa lettera
+      const existingProgress = data.progress.find(p => 
+        p.letterId === letterId && p.userId === userId
+      );
+      
+      if (!existingProgress) {
+        data.progress.push({
+          letterId,
+          userId,
+          viewedAt: new Date().toISOString()
+        });
+        
+        fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+        return true;
+      }
+      
+      return true;
     } catch (error) {
       console.error('Mark as viewed error:', error);
-      return false; // Ritorna false in caso di errore
-    }
-  });
-
-  // Handler per verificare lo stato dell'ambiente Electron
-  ipcMain.handle('check-environment', () => {
-    try {
-      console.log('IPC: Verifica stato ambiente Electron');
-      
-      return {
-        success: true,
-        environment: {
-          isElectron: true,
-          platform: process.platform,
-          version: process.versions.electron,
-          node: process.versions.node,
-          chrome: process.versions.chrome
-        }
-      };
-    } catch (error) {
-      console.error('Check environment error:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      return false;
     }
   });
 }
